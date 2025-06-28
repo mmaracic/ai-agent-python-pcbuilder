@@ -63,6 +63,13 @@ To deactivate the current virtual environment use:
 ```  
 deactivate
 ```
+# Set environment variables
+ORACLE_HOME is a variable sample
+```
+code ~/.profile
+#add variable lines at the bottom of the file:  
+     export ORACLE_HOME=/usr/lib/oracle/11.2/client64
+```
 
 # Start app
 * Activate the local python environment .venv
