@@ -84,5 +84,8 @@ Access:
 http://localhost:8000/docs  
 To see FastAPI swagger page with information
 
+Available GET API is on:  
+http://localhost:8000/setup
+
 Available POST API is on:  
-http://localhost:8000/
+http://localhost:8000/query (uses text body)
