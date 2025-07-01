@@ -6,7 +6,8 @@ from fastapi import FastAPI, Request
 from fastapi.params import Body, Depends
 from langchain.chat_models.base import BaseChatModel
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage, trim_messages
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from pydantic import SecretStr
 from langgraph.checkpoint.memory import MemorySaver
@@ -18,18 +19,24 @@ OPEN_ROUTER_API_KEY = "OPEN_ROUTER_API_KEY"
 OPEN_ROUTER_API_KEY_ERROR = "OPEN_ROUTER_API_KEY environment variable is not set"
 MODEL_NOT_INITIALIZED_ERROR = "Model is not initialized. Please call /setup first."
 
+
 class AppState:
     """
     Holds application-wide state, such as the chat model instance.
     """
+
     def __init__(self):
         self.model: Optional[BaseChatModel] = None
         self.compiled_graph: Optional[CompiledStateGraph] = None
+        self.prompt_template: Optional[ChatPromptTemplate] = None
+
 
 app = FastAPI()
 app.state.app_state = AppState()
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 def get_state(request: Request) -> AppState:
     """
@@ -40,8 +47,9 @@ def get_state(request: Request) -> AppState:
     """
     return request.app.state.app_state
 
-@app.get("/setup")
-def setup(application_state: Annotated[AppState, Depends(get_state)]) -> None:
+
+@app.post("/setup")
+def setup(application_state: Annotated[AppState, Depends(get_state)], prompt: Annotated[str, Body(..., media_type="text/plain")], prompt_size: int = 50) -> None:
     """
     Initializes the FastAPI application by checking for the required
     environment variable and setting up the chat model.
@@ -57,25 +65,48 @@ def setup(application_state: Annotated[AppState, Depends(get_state)]) -> None:
         model="mistralai/mistral-small-3.2-24b-instruct:free",
         api_key=SecretStr(os.environ[OPEN_ROUTER_API_KEY]),
         base_url="https://openrouter.ai/api/v1",
-        default_headers={"HTTP-Referer": "https://mysite", "X-Title": "My App"},
+        default_headers={
+            "HTTP-Referer": "https://mysite", "X-Title": "My App"},
+    )
+
+    application_state.prompt_template = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(
+                content=prompt
+            ),
+            MessagesPlaceholder(variable_name="messages"),
+        ]
     )
 
     def call_model(state: MessagesState):
-        if not application_state.model:
+        if not application_state.model or not application_state.prompt_template:
             logger.error(MODEL_NOT_INITIALIZED_ERROR)
             raise ValueError(MODEL_NOT_INITIALIZED_ERROR)
 
-        response = application_state.model.invoke(state["messages"])
+        trimmed_messages = trim_messages( #we are trimming only the prompt to 4 last messages, full in memory history is kept
+            messages=state["messages"],
+            max_tokens=prompt_size,
+            strategy="last",
+            token_counter=len, #Here we can put a model to count tokens but mistral cant count tokens so len is counting messages 
+            include_system=True,
+            allow_partial=False,
+            start_on="human",
+        )
+        prompt = application_state.prompt_template.invoke(
+            {"messages": trimmed_messages})
+        response = application_state.model.invoke(prompt)
         return {"messages": response}
-    
+
     graph = StateGraph(
         state_schema=MessagesState
     )
     graph.add_edge(START, "model")
     graph.add_node(node="model", action=call_model)
-    application_state.compiled_graph = graph.compile(checkpointer=MemorySaver())
+    application_state.compiled_graph = graph.compile(
+        checkpointer=MemorySaver())
 
     logger.info("FastAPI application initialized successfully")
+
 
 @app.post("/query")
 def query(state: Annotated[AppState, Depends(get_state)], text: Annotated[str, Body(media_type="text/plain")], user_id: str = "default_user"):
@@ -98,10 +129,10 @@ def query(state: Annotated[AppState, Depends(get_state)], text: Annotated[str, B
         return {"response": MODEL_NOT_INITIALIZED_ERROR}
     logger.info("Received query: %s from user %s", text, user_id)
 
-    config = RunnableConfig(configurable= {"thread_id": user_id})
+    config = RunnableConfig(configurable={"thread_id": user_id})
     input_messages = [HumanMessage(text)]
-    response = state.compiled_graph.invoke({"messages": input_messages}, config)
-    
+    response = state.compiled_graph.invoke(
+        {"messages": input_messages}, config)
+
     logger.info("Message count in history: %d", len(response["messages"]))
     return {"response": response["messages"][-1].pretty_print()}
-    
