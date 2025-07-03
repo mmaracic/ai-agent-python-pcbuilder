@@ -9,9 +9,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import SecretStr
-from langchain_community.tools import DuckDuckGoSearchResults
+from langchain_community.tools import DuckDuckGoSearchRun
 
-from agent import AbstractAgent, GraphAgent, ReActAgent
+from agent import AbstractAgent, GraphAgent, ReActAgent, get_agent
 
 # Constants
 OPEN_ROUTER_API_KEY = "OPEN_ROUTER_API_KEY"
@@ -48,7 +48,12 @@ def get_state(request: Request) -> AppState:
 
 
 @app.post("/setup")
-def setup(application_state: Annotated[AppState, Depends(get_state)], prompt: Annotated[str, Body(..., media_type="text/plain")], prompt_size: int = 50) -> None:
+def setup(
+    application_state: Annotated[AppState, Depends(get_state)],
+    prompt: Annotated[str, Body(..., media_type="text/plain")],
+    prompt_size: int = 50,
+    agent_type: str = "react"
+) -> None:
     """
     Initializes the FastAPI application by checking for the required
     environment variable and setting up the chat model.
@@ -61,7 +66,7 @@ def setup(application_state: Annotated[AppState, Depends(get_state)], prompt: An
         raise ValueError(OPEN_ROUTER_API_KEY_ERROR)
 
     application_state.model = ChatOpenAI(
-        model="mistralai/mistral-small-3.2-24b-instruct:free",
+        model="deepseek/deepseek-chat-v3-0324:free",
         api_key=SecretStr(os.environ[OPEN_ROUTER_API_KEY]),
         base_url="https://openrouter.ai/api/v1",
         default_headers={
@@ -76,9 +81,10 @@ def setup(application_state: Annotated[AppState, Depends(get_state)], prompt: An
             MessagesPlaceholder(variable_name="messages"),
         ]
     )
-    search_tool = DuckDuckGoSearchResults()
+    search_tool = DuckDuckGoSearchRun()
     
-    application_state.agent = ReActAgent(
+    application_state.agent = get_agent(
+        agent_type=agent_type,
         model=application_state.model,
         tools=[search_tool],
         prompt_template=application_state.prompt_template,
@@ -111,4 +117,5 @@ def query(state: Annotated[AppState, Depends(get_state)], text: Annotated[str, B
     input_messages = [HumanMessage(text)]
     response = state.agent.process_message(input_messages, user_id)
     logger.info("Message count in history: %d", len(response["messages"]))
-    return {"response": response["messages"][-1].pretty_print()}
+    logger.info("Response generated: %s", response["messages"][-1].content)
+    return {"response": response["messages"][-1]}

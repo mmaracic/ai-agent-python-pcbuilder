@@ -24,7 +24,6 @@ from langgraph.prebuilt import create_react_agent
 logger = logging.getLogger(__name__)
 
 
-
 class AbstractAgent(ABC):
     """
     Abstract base class for agents.
@@ -45,8 +44,6 @@ class AbstractAgent(ABC):
         Returns:
             dict[str, Any]: The updated state or response from the agent.
         """
-
-
 
 
 class GraphAgent(AbstractAgent):
@@ -104,7 +101,8 @@ class GraphAgent(AbstractAgent):
         graph = StateGraph(state_schema=MessagesState)
         graph.add_edge(START, "model")
         graph.add_node(node="model", action=call_model)
-        self.compiled_graph: CompiledStateGraph = graph.compile(checkpointer=MemorySaver())
+        self.compiled_graph: CompiledStateGraph = graph.compile(
+            checkpointer=MemorySaver())
 
     def process_message(self, messages: list[HumanMessage], user_id: str) -> dict[str, Any]:
         """
@@ -119,7 +117,6 @@ class GraphAgent(AbstractAgent):
         """
         config = RunnableConfig(configurable={"thread_id": user_id})
         return self.compiled_graph.invoke({"messages": messages}, config)
-
 
 
 class ReActAgent(AbstractAgent):
@@ -149,7 +146,8 @@ class ReActAgent(AbstractAgent):
         self.tools = tools
         self.prompt_template = prompt_template
         self.prompt_size = prompt_size
-        self.compiled_graph: CompiledStateGraph = create_react_agent(model, tools, checkpointer=MemorySaver())
+        self.compiled_graph: CompiledStateGraph = create_react_agent(
+            model, tools, checkpointer=MemorySaver())
 
     def process_message(self, messages: list[HumanMessage], user_id: str) -> dict[str, Any]:
         """
@@ -165,3 +163,24 @@ class ReActAgent(AbstractAgent):
         config = RunnableConfig(configurable={"thread_id": user_id})
         return self.compiled_graph.invoke({"messages": messages}, config)
 
+
+def get_agent(agent_type: str, model: BaseChatModel, tools: list[BaseTool], prompt_template: ChatPromptTemplate, prompt_size: int = 50) -> AbstractAgent:
+    """
+    Factory function to get an instance of the specified agent type.
+
+    Args:
+        agent_type (str): The type of agent to create ("graph" or "react").
+        model (BaseChatModel): The chat model for generating responses.
+        tools (list[BaseTool]): List of tools available to the agent.
+        prompt_template (ChatPromptTemplate): Template for formatting prompts.
+        prompt_size (int, optional): Maximum number of messages to include in the prompt. Defaults to 50.
+
+    Returns:
+        AbstractAgent: An instance of the specified agent type.
+    """
+    if agent_type == "graph":
+        return GraphAgent(model, tools, prompt_template, prompt_size)
+    elif agent_type == "react":
+        return ReActAgent(model, tools, prompt_template, prompt_size)
+    else:
+        raise ValueError(f"Unknown agent type: {agent_type}")
