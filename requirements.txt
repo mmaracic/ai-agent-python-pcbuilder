@@ -6,4 +6,10 @@ requests
 
 langchain
 langchain-openai
+langchain-mcp-adapters
+langmem
 langgraph
+agentevals
+
+langchain-community
+duckduckgo-search

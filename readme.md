@@ -70,6 +70,8 @@ code ~/.profile
 #add variable lines at the bottom of the file:  
      export ORACLE_HOME=/usr/lib/oracle/11.2/client64
 ```
+# Agents
+
 
 # Start app
 * Activate the local python environment .venv
@@ -87,3 +89,18 @@ To see FastAPI swagger page with information
 Available POST API is on:  
 http://localhost:8000/setup
 http://localhost:8000/query (uses text body)
+
+# Features
+* Openrouter
+* Short term memory + trimming
+* Agent graph
+
+# ToDo
+ * tool use
+ * Long term memory
+ * Streaming support
+ * Structured output
+ * Human in the loop
+ * MCP
+ * RAG
+ * Agent 
