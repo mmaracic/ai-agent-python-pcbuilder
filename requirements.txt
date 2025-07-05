@@ -12,4 +12,5 @@ langgraph
 agentevals
 
 langchain-community
+langchain-google-community
 duckduckgo-search

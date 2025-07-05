@@ -1,3 +1,9 @@
+"""
+Main FastAPI application module for the AI agent service.
+
+This module sets up the FastAPI app, application state, and endpoints for model setup and querying.
+It integrates LangChain, OpenRouter, and custom agent/tool logic for conversational AI.
+"""
 import logging
 import os
 from typing import Annotated, Optional
@@ -9,9 +15,10 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import SecretStr
-from langchain_community.tools import DuckDuckGoSearchRun
 
-from agent import AbstractAgent, GraphAgent, ReActAgent, get_agent
+from agents.agent import AbstractAgent
+from agents import get_agent
+from tools import get_tools
 
 # Constants
 OPEN_ROUTER_API_KEY = "OPEN_ROUTER_API_KEY"
@@ -81,12 +88,10 @@ def setup(
             MessagesPlaceholder(variable_name="messages"),
         ]
     )
-    search_tool = DuckDuckGoSearchRun()
-    
     application_state.agent = get_agent(
         agent_type=agent_type,
         model=application_state.model,
-        tools=[search_tool],
+        tools=get_tools(),
         prompt_template=application_state.prompt_template,
         prompt_size=prompt_size
     )
@@ -94,7 +99,9 @@ def setup(
 
 
 @app.post("/query")
-def query(state: Annotated[AppState, Depends(get_state)], text: Annotated[str, Body(media_type="text/plain")], user_id: str = "default_user"):
+def query(state: Annotated[AppState, Depends(get_state)],
+          text: Annotated[str, Body(media_type="text/plain")],
+          user_id: str = "default_user"):
     """
     Handles POST requests to the '/query' endpoint.
 
