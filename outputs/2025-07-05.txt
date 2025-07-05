@@ -1,0 +1,29 @@
+Model: OpenRouter deepseek/deepseek-chat-v3-0324:free, provider Chutes
+
+(.venv) marijo@DESKTOP-LIQLQ4Q:/mnt/e/Projekti/ai/ai-agent-python-pcbuilder$ uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000
+INFO:     Started server process [145017]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-07-06 00:54:38,700 - main - INFO - Initializing FastAPI application
+2025-07-06 00:54:42,624 - main - INFO - Prompt is set to: You are an assistent whose goal is to help the user find where to buy desktop computer parts.
+        First inquire the user about the user country, city, budget and component type.
+        When you have this information, use the tools to find the retailers in the provided country and city.
+         After that use search to find the best components in terms of price and performance that match user criteria
+         on the sites of collected retailers.
+         Output the list of ten components, for each list the name, price, retailer and link to the product.
+2025-07-06 00:54:42,724 - main - INFO - FastAPI application initialized successfully
+INFO:     127.0.0.1:56368 - "POST /setup?agent_type=react HTTP/1.1" 200 OK
+2025-07-06 00:55:23,326 - main - INFO - Received query: Find me an intel 14th generation cpu with the price below 300 euro in Zagreb, Croatia from user default_user
+2025-07-06 00:55:25,544 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-06 00:55:32,512 - tools.search_tool - INFO - Search tool called with query: Intel 14th generation CPU below 300 euro Zagreb Croatia
+2025-07-06 00:55:32,899 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-06 00:55:32,900 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-06 00:55:33,866 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-06 00:55:33,866 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-06 00:55:33,867 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-06 00:55:34,313 - tools.search_tool - INFO - Google search generated search response: E-OBS is thus widely used to. 170 evaluate atmospheric regional climate models over the land, particularly by the EURO-CORDEX community (e.g. Kotlarski et al., ... Dec 12, 2023 ... ... 14 countries reporting times to grid connection below six months. ... Support schemes: under the measure 'increase of the domestic generation ... Jan 17, 2023 ... The study used data from Zagreb, Croatia, and applied adaptive traffic control techniques. ... 6.0 running on an Intel Core i3-4160 CPU ... Sep 30, 2021 ... ... Zagreb, Croatia. Correspondence: Petra Pranic (pranic@izor.hr) ... in the deeper layers between 300 and 900m of depth but rapidly decrease below ... May 14, 2024 ... Zagreb, Croatia ana-petra.jukic@fer.hr, ana.selek@fer.hr, marija ... The PilotNet models were executed on 12th Gen Intel(R) Core(TM) i7 ... Feb 24, 2020 ... Hence, the needed transformation of the DH system can be defined under the term of 4th Generation District. Heating Technologies and Systems ( ... The Srebrenica massacre, also known as the Srebrenica genocide, was the July 1995 genocidal killing of more than 8,000 Bosniak Muslim men and boys in and ... Oct 11, 2018 ... A Special Notice section concerning NEW FLIP FEATURES appears below and contains notices of new requirements or major modifications of ... CPU: 64-bit Intel i5/i7 (8th generation or newer), or AMD equivalent. A x64 ... Europe/Zagreb. Europe/Zaporozhye. Europe/Zurich. GB. GB-Eire. GMT. GMT+0. GMT ... Jun 2, 2015 ... It shows in more detail how the O2 facility can be viably implemented using proven technologies and the software framework currently under ...
+2025-07-06 00:55:37,769 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-06 00:55:39,444 - main - INFO - Message count in history: 4
+2025-07-06 00:55:39,445 - main - INFO - Response generated: I couldn't find specific information about an Intel 14th-generation CPU priced below 300 euros in Zagreb, Croatia, in the search results. However, you may want to check local electronics stores or online retailers like Links, Adrenaline, or Nabava.net for the latest pricing and availability. Let me know if you'd like me to refine the search or assist further!
+INFO:     127.0.0.1:60642 - "POST /query HTTP/1.1" 200 OK

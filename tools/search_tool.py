@@ -4,7 +4,8 @@ Module providing a web search tool using DuckDuckGo and a Pydantic schema for in
 import logging
 from typing import Optional
 
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 from langchain_core.tools import BaseTool
 from langchain_core.tools.base import ArgsSchema
 from langchain_core.callbacks import (
@@ -32,9 +33,10 @@ class SearchTool(BaseTool):
     description: str = "Performs a web search using DuckDuckGo."
     args_schema: Optional[ArgsSchema] = SearchSchema
 
-    duckduck: DuckDuckGoSearchRun = DuckDuckGoSearchRun()
+    duckduck: DuckDuckGoSearchAPIWrapper = DuckDuckGoSearchAPIWrapper()
+    google: GoogleSearchAPIWrapper = GoogleSearchAPIWrapper()
 
-    def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+    def _run(self, query: str) -> str:
         """
         Perform a synchronous web search using DuckDuckGo.
 
@@ -42,9 +44,7 @@ class SearchTool(BaseTool):
             str: The search results as a string.
         """
         if self.duckduck is not None:
-            result = self.duckduck.run(tool_input=query, run_manager=run_manager)
-            logger.info("Search tool called with query: %s\n Response: %s", query, result)
-            return result
+            return self.run_search_tool(query=query)
         raise ValueError("DuckDuckGoSearchRun is not initialized.")
 
     async def _arun(self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
@@ -59,4 +59,25 @@ class SearchTool(BaseTool):
         Returns:
             str: The search results as a string.
         """
-        return self._run(query=query, run_manager=run_manager.get_sync()) if run_manager else self._run(query=query)
+        return self._run(query=query)
+
+    def run_search_tool(self, query: str) -> str:
+        """
+        Run the search tool with the given query.
+
+        Args:
+            query (str): The search query to look up.
+
+        Returns:
+            str: The search results as a string.
+        """
+        logger.info("Search tool called with query: %s", query)
+        try:
+            result = self.duckduck.run(query=query)
+            logger.info("DuckDuckGo generated search response: %s", result)
+            return result
+        except Exception as e:
+            logger.error("Error occurred while running DuckDuckGo search tool: %s", e)
+            result = self.google.run(query=query)
+            logger.info("Google search generated search response: %s", result)
+            return result

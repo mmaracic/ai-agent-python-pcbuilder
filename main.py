@@ -57,7 +57,13 @@ def get_state(request: Request) -> AppState:
 @app.post("/setup")
 def setup(
     application_state: Annotated[AppState, Depends(get_state)],
-    prompt: Annotated[str, Body(..., media_type="text/plain")],
+    prompt: Annotated[str, Body(..., media_type="text/plain")] =
+        """You are an assistent whose goal is to help the user find where to buy desktop computer parts.
+        First inquire the user about the user country, city, budget and component type.
+        When you have this information, use the tools to find the retailers in the provided country and city.
+         After that use search to find the best components in terms of price and performance that match user criteria
+         on the sites of collected retailers.
+         Output the list of ten components, for each list the name, price, retailer and link to the product.""",
     prompt_size: int = 50,
     agent_type: str = "react"
 ) -> None:
@@ -79,7 +85,7 @@ def setup(
         default_headers={
             "HTTP-Referer": "https://mysite", "X-Title": "My App"},
     )
-
+    logger.info("Prompt is set to: %s", prompt)
     application_state.prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessage(
