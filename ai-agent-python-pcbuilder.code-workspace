@@ -4,5 +4,56 @@
 			"path": "."
 		}
 	],
-	"settings": {}
-}
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Debug as uvicorn app",
+				"type": "debugpy",
+				"request": "launch",
+				"module": "uvicorn",
+				"args": [
+					"main:app",
+					"--app-dir",
+					"${workspaceFolder}",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8000"
+				],
+				"jinja": true,
+				"justMyCode": false,
+				"console": "integratedTerminal",
+				"env": {
+					"PYTHONPATH": "${workspaceFolder}"
+				},
+				"envFile": "${workspaceFolder}/.env"
+			},
+			{
+				"name": "Debug as uvicorn app with reload",
+				"type": "debugpy",
+				"request": "launch",
+				"module": "uvicorn",
+				"args": [
+					"main:app",
+					"--app-dir",
+					"${workspaceFolder}",
+					"--reload",
+					"--reload-dir",
+					"${workspaceFolder}",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8000"
+				],
+				"jinja": true,
+				"justMyCode": false,
+				"console": "integratedTerminal",
+				"env": {
+					"PYTHONPATH": "${workspaceFolder}"
+				},
+				"envFile": "${workspaceFolder}/.env"
+			}
+		]
+	}}

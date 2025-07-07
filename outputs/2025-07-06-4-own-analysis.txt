@@ -1,0 +1,60 @@
+Model: OpenRouter deepseek/deepseek-chat-v3-0324:free, provider Chutes
+
+marijo@DESKTOP-LIQLQ4Q:/mnt/e/Projekti/ai/ai-agent-python-pcbuilder$ uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000
+INFO:     Started server process [54375]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-07-07 02:48:38,118 - main - INFO - Initializing FastAPI application
+2025-07-07 02:48:40,949 - main - INFO - Prompt is set to: You are an assistent whose goal is to help the user find at which retailer to buy desktop computer parts.
+The user has to specify city and country where to search for retailers.
+First plan the steps to fullfill the request and outline the plan to the user and then proceed with the plan.
+The final result of the plan has to be the list of ten best components across available retailers that fit user request.
+For each component list the name, price, retailer name, retailer product id and timestamp when the informaion was obtained.
+The returned data about components can not be older than 7 days before the current date.
+2025-07-07 02:48:41,000 - main - INFO - FastAPI application initialized successfully
+INFO:     127.0.0.1:36504 - "POST /setup HTTP/1.1" 200 OK
+2025-07-07 02:48:51,959 - main - INFO - Received query:  I want to buy Intel cpu of 14th generation that doent cost more than 200 euros in Zagreb, Croatia from user default_user
+2025-07-07 02:48:54,100 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 02:49:09,344 - tools.search_tool - INFO - Search tool called with query: major electronics retailers selling computer parts in Zagreb, Croatia
+2025-07-07 02:49:09,742 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 02:49:09,742 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 02:49:10,703 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 02:49:10,703 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 02:49:10,703 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 02:49:11,316 - tools.search_tool - INFO - Google search generated search response: Jan 23, 2015 ... Cheapest option (for non used tech) is one of many just-in-time stores or web stores in which you only have to call in advance and order for the next day. Do more of what you love with your favorite Pixel devices. Google Fi Wireless offers ultra-reliable 5G speed and industry-leading security. Nov 29, 2021 ... The thrift store on Emerson close to 95 always seems to have a pretty good selection of electronics but some sell quick, you have to keep trying. CircuitMess offers hands-on STEM kits that make learning fun! Build robots, game consoles, and gadgets while exploring electronics, coding, and robotics. Apr 2, 2022 ... Where would I go to buy computers, parts to build computers, or other consumer electronics in or around Reykjavik? I prefer to buy things in physical stores ... Jul 12, 2015 ... ... electronic skin analyzer. AlpStories products are new on the market and before the store opening were sold exclusively through on-line channels. Apr 30, 2023 ... Been a while since I've looked, are there any trustworthy used computer stores in the area? Looking for used older systems like Dell ... Sep 30, 2022 ... The core business of the company is the distribution of computer hardware, software and consumer electronics. The Croatian company has more than ... ... Zagreb. Croatia. +385 1 2451 176 +385 1 6399 921 · Visit website. Adarc Computer ... electronics. Tribhuvan Road Tinwala building , Office no 6th , 1st Floor ... receive information on products from retailers are the major characteristics of ... Sinergija, Zagreb – Croatia. Strugar, I., Knezević, B., and Jakovic, B ...
+2025-07-07 02:49:14,785 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 02:49:24,927 - tools.time_tool - INFO - Time tool called and responded with: 2025-07-07T02:49:24.927700
+2025-07-07 02:49:27,185 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 02:49:43,676 - tools.search_tool - INFO - Search tool called with query: site:links.hr 14th generation Intel CPU under 200 euros
+2025-07-07 02:49:43,898 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 02:49:43,898 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 02:49:44,970 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 02:49:44,970 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 02:49:44,971 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 02:49:45,302 - tools.search_tool - INFO - Google search generated search response: ... Intel 0. nVidia GeForce 0. nVidia Quadro 0. prikaži sve. prikaži manje. Grafika ... 200 0. 210 0. 240 0. 245 0. 254 0. 260 0. 285 0. 300 0. prikaži sve. prikaži ... XIAOMI REDMI 14C - KOMBINACIJA UČINKOVITOSTI I POUZDANOSTI Xiaomi Redmi 14C predstavlja idealan pametni telefon za korisnike koji traže balan... ... Intel 0. nVidia GeForce 0. nVidia Quadro 0. prikaži sve. prikaži manje. Grafika ... 200 0. 210 0. 240 0. 245 0. 254 0. 260 0. 285 0. 300 0. prikaži sve. prikaži ... Laptopi, mobiteli, tableti, monitori, printeri, pametni satovi i još mnogo toga na akciji – provjeri Links ponudu s akcijama i uštedi na top uređajima!
+2025-07-07 02:49:49,602 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 02:49:53,140 - tools.search_tool - INFO - Search tool called with query: Intel 14th generation CPU under 200 euros in Zagreb, Croatia
+2025-07-07 02:49:53,376 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 02:49:53,376 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 02:49:54,343 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 02:49:54,343 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 02:49:54,343 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 02:49:54,821 - tools.search_tool - INFO - Google search generated search response: ... Within 14 Days. What's in the box? Crystal Light Headset, 1 Unit; Two ... intel I9 - 10x00 Series or above or AMD processor with the same performance. RAM ... Dec 12, 2023 ... In 2023, we not only installed more new power generation capacity than all other technologies in the EU combined; solar has shown outstanding ... Jun 27, 2021 ... j PwC Savjetovanje, Heinzelova 70, 10000, Zagreb, Croatia k ... local mitigation plans than cities in Croatia, Slovenia and Greece, for example. May 16, 2023 ... 2 Faculty of Electrical Engineering and Computing, University of Zagreb, Zagreb, Croatia ... Since Q1 2023, there a limited number of Intel CPU ... ... Zagreb, FER, Unska 3, 10000, Zagreb, Croatia; Mateo · Valero, mateo.valero@bsc ... Power/Performance/Area Evaluations for Next-Generation. HPC Processors ... May 12, 2025 ... Performance measurements show a memory use of 5 MB of RAM and under 200 ... The implementations benchmarked are optimized for CPU ... Jun 2, 2015 ... 129 University of Zagreb, Zagreb, Croatia. 130 Université de ... Intel unveils 72-core x86 Knights Landing CPU for exascale supercomputing. EUR 200 million from Connecting Europe Facility-2Search for available ... The University of Zagreb, Croatia (1669) is the oldest and biggest university ... ... Zagreb, Croatia. ... Prior to beginning the graduate program in CSE in 2010, Leung worked for five years at Intel designing cache systems on several generations ... Nov 1, 2018 ... The motherboard you choose will also limit the possibilities for several other key component choices, specifically, the memory and the CPU.
+2025-07-07 02:49:57,761 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 02:50:09,351 - main - INFO - Message count in history: 10
+2025-07-07 02:50:09,351 - main - INFO - Response generated: It seems the broader search did not yield specific results for 14th-generation Intel CPUs under 200 euros in Zagreb, Croatia. Here’s what I can conclude:
+
+1. **Limited Availability**: 14th-generation Intel CPUs may not be available at or below 200 euros in local retailers or online stores in Zagreb, Croatia.
+2. **Alternative Suggestions**:
+   - Consider older-generation Intel CPUs (e.g., 12th or 13th generation) that might fit your budget.
+   - Expand your budget slightly to accommodate higher-priced 14th-generation CPUs.
+   - Look for used or refurbished options if you're open to them.
+
+If you'd like, I can provide a list of alternative CPUs (older generations or other brands) within your budget or assist further. Let me know how you'd like to proceed!
+INFO:     127.0.0.1:49046 - "POST /query HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54375]
+marijo@DESKTOP-LIQLQ4Q:/mnt/e/Projekti/ai/ai-agent-python-pcbuilder$ 

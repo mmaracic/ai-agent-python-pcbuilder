@@ -1,0 +1,84 @@
+INFO:     127.0.0.1:49622 - "POST /query HTTP/1.1" 200 OK
+2025-07-07 00:20:53,313 - main - INFO - Initializing FastAPI application
+2025-07-07 00:20:53,314 - main - INFO - Prompt is set to: You are an assistent whose goal is to help the user find where to buy desktop computer parts. You are to find these parts using a sequence of steps as below:
+1. Inquire the user about the user country, city, budget and component type.
+2. Use the search tools to find the retailers in the provided country and city.
+3. Search retailer web site to find the best components in terms of price and performance that match user criteria.
+4.Output the list of ten best components, for each component list the name, price, retailer name, retailer product id and timestamp when the informaion was obtained.
+The returned data about components can not be older than 7 days before the current date.
+2025-07-07 00:20:53,358 - main - INFO - FastAPI application initialized successfully
+INFO:     127.0.0.1:59450 - "POST /setup HTTP/1.1" 200 OK
+2025-07-07 00:21:13,525 - main - INFO - Received query: You are an assistent whose goal is to help the user find where to buy desktop computer parts. You are to find these parts using a sequence of steps as below:
+1. Inquire the user about the user country, city, budget and component type.
+2. Use the search tools to find the retailers in the provided country and city.
+3. Search retailer web site to find the best components in terms of price and performance that match user criteria.
+4.Output the list of ten best components, for each component list the name, price, retailer name, retailer product id and timestamp when the informaion was obtained.
+The returned data about components can not be older than 7 days before the current date. from user default_user
+2025-07-07 00:21:14,398 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 00:21:15,842 - main - INFO - Message count in history: 2
+2025-07-07 00:21:15,842 - main - INFO - Response generated: Okay, I understand. I'm ready to help users find desktop computer parts. I'll follow these steps:
+
+1.  **Ask the user:** I'll start by asking the user for their country, city, budget, and the specific component type they're looking for (e.g., CPU, GPU, RAM, motherboard, etc.).
+2.  **Search for retailers:** I'll use the search tool to find computer parts retailers in the specified country and city.
+3.  **Search retailer websites:** I'll use the search tool again, focusing on the websites of the retailers I found, to locate components that match the user's budget and performance needs.
+4.  **Compile and output the list:** I will present a list of the ten best components based on price and performance. For each component, I'll list the name, price, retailer name, retailer product ID, and the timestamp (date) when the information was obtained. I will ensure that the data is not older than 7 days from the current date.
+
+Let's start!  Please tell me:
+
+*   What country are you in?
+*   What city are you in?
+*   What is your budget for this component?
+*   What specific type of component are you looking for today (e.g., CPU, GPU, RAM, motherboard, SSD, etc.)?
+
+INFO:     127.0.0.1:57622 - "POST /query HTTP/1.1" 200 OK
+2025-07-07 00:21:37,306 - main - INFO - Received query:  I want to buy Intel cpu of 14th generation that doent cost more than 200 euros in Zagreb, Croatia from user default_user
+2025-07-07 00:21:38,232 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 00:21:38,602 - tools.search_tool - INFO - Search tool called with query: computer parts retailers Zagreb Croatia
+2025-07-07 00:21:38,603 - tools.time_tool - INFO - Time tool called and responded with: 2025-07-07T00:21:38.603833
+2025-07-07 00:21:38,835 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 00:21:38,835 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:39,796 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 00:21:39,797 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 00:21:39,797 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 00:21:40,250 - tools.search_tool - INFO - Google search generated search response: Jan 23, 2015 ... Comments Section ... Cheapest option (for non used tech) is one of many just-in-time stores or web stores in which you only have to call in ... Dell provides technology solutions, services & support. Buy Laptops, Touch Screen PCs, Desktops, Servers, Storage, Monitors, Gaming & Accessories. Dec 27, 2019 ... I was wondering is there any retailers or shops that have an option to ship to Croatia(albeit for a reasonable price of shipping). Do more of what you love with your favorite Pixel devices. Google Fi Wireless offers ultra-reliable 5G speed and industry-leading security. ... Zagreb. Croatia. +385 1 2451 176 +385 1 6399 921 · Visit website. Adarc Computer ... Store. Italy. Visit website. Akortek Bilişim San. ve Dış Tic. LTD. Şti. Futura IT d.o.o., gaming PC store, servis i prodaja računala. Jul 23, 2021 ... Lajan, a refugee from the Kurdistan region of Iraq, works at a computer at the IKEA Zagreb store. © UNHCR/Sanjin Kaštelan. Croatia. Host ... Jul 12, 2015 ... After receiving the analyses data, customers can move to the mixing station where using a touch screen computer, in only 4 steps, they ... DJI is the world's leading producer of camera drones and stabilizers. Check out our Mavic, and Spark drones, Ronin and Osmo gimbals, and more! Croatia Airlines official website. Book flights online and find airline tickets at reasonable prices for European flights. Special offers, travel info and ...
+2025-07-07 00:21:40,934 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 00:21:41,612 - tools.search_tool - INFO - Search tool called with query: Adarc Computer Intel 14th gen CPU price Zagreb Croatia
+2025-07-07 00:21:41,614 - tools.search_tool - INFO - Search tool called with query: Futura IT d.o.o. Intel 14th gen CPU price Zagreb Croatia
+2025-07-07 00:21:41,797 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 00:21:41,797 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 00:21:41,833 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 00:21:41,833 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 00:21:42,737 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 00:21:42,738 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:42,738 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:42,779 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 00:21:42,779 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:42,780 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:45,413 - tools.search_tool - INFO - Google search generated search response: ... ZAGREB, CROATIA. VII. Publisher: University of Zagreb Faculty of Textile Technology ... d.o.o.. Tekstilna galanterija Panić. Coca Cola HBC Hrvatska d.o.o.. It should be said at the very beginning that the use and the advocation of terms such as “Vojvodinian art”, “art in Vojvo dina”, “Vojvodinian art scene”, ... ... price 705 virtual 706 maine 707 chamber 708 tours 709 east 710 access 711 designer 712 current 713 pain 714 metal 715 young 716 patio 717 exchange 718 race ... AS35648 T-MOBILE-HR-AS Croatian Telecom Inc., Zagreb, Croatia AS35649 ... AS48774 GEN-ENERGIJA-SI-AS Gen Energija d.o.o.. AS48775 AVANTIME-COM Avantime ... Jovičić, Organized craft in Croatia: 1852.-2002 (Zagreb: Hrvatska obrtnička ... what more expensive, so that the maximum Zagreb prices were at the same. ... price 501660379 104 b 494348281 105 date 488989978 106 back 488061732 107 top 484229941 108 people 480341093 109 had 480328784 110 list 472626562 111 n ... ... price 122748 sons 122722 block 122704 premier 122702 honor 122677 impact 122642 champions 122600 joe 122541 districts 122524 generation 122403 estimated ... ... price -##tive -Korean -defense -Get -arrested -1927 -send -urban -##ss -pilot -Okay -Media -reality -arts -soul -thirty -##be -catch -generation -##nes ... ... d.o.o. dadeh pardazan sabz alborz co. p.j.s. control circle ltd broadnet as ... gen networks b.v. secure data systems srl confort lcc srl it systems ... Dec 7, 2023 ... • COST CA 19130 - Fintech and Artificial Intel- ligence in Finance – Towards a transparent financial industry. • ORCA-LAB - All-Optical ...
+2025-07-07 00:21:46,081 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 00:21:46,770 - tools.search_tool - INFO - Search tool called with query: Intel 14th gen CPU price Croatia under 200 euros
+2025-07-07 00:21:46,959 - primp - INFO - response: https://html.duckduckgo.com/html 202
+2025-07-07 00:21:46,959 - duckduckgo_search.DDGS - INFO - Error to search using html backend: https://html.duckduckgo.com/html 202 Ratelimit
+2025-07-07 00:21:47,882 - primp - INFO - response: https://lite.duckduckgo.com/lite/ 202
+2025-07-07 00:21:47,883 - duckduckgo_search.DDGS - INFO - Error to search using lite backend: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:47,883 - tools.search_tool - ERROR - Error occurred while running DuckDuckGo search tool: https://lite.duckduckgo.com/lite/ 202 Ratelimit
+2025-07-07 00:21:48,337 - tools.search_tool - INFO - Google search generated search response: Apr 26, 2021 ... 61 votes, 83 comments. Greetings fellow enthusiasts ! As the pandemic rages on and the availability and prices of both GPU and CPU are ... February 14, 2022: Autonomous Movers Set for US Launch in 2024 ... November 28, 2022: AWS Activates 4th Gen Intel Xeon Scalable Processors for New EC2 R7iz ... Save on laptops · Dell 15 3530 Laptop - Business & Home Student Laptop Computer, Intel 10-Core · Dell Inspiron 15 15.6" Touchscreen Laptop Computer for ... Mar 11, 2024 ... Its either this OR "Asus Vivobook 16 (2024) Laptop – Intel Core i7-150U / 16inch WUXGA / 1TB SSD / 16GB RAM / Shared Intel Graphics / Windows 11 ... Sep 4, 2024 ... What about ryzen or intel cpu? Like i5-14th gen or ryzen gen4-5? And what about gpu? I found one rtx 4060 ti 16gb or should i take amd ... normal trade relations—rates in the General column under column 1 of the tariff ... • Articles valued at not more than $200 (or $100 for bona fide gifts) that are. CPU. RAM. Drives. 193 results. sort by: Price. 193 results. Enable IPv6 only ... Intel® Core™ i5-13500CPU14 cores / 20 threads @ 2.5 GHzGeneration:Raptor ... Windows 11 HomeIntel® Core™ i7 14th generation processorNVIDIA® GeForce RTX™ 4070 Laptop GPU (8 GB GDDR6 dedicated)32 GB memory; 1 TB SSD storage16" diagonal ... This is the super fast Intel i7 NUC (based on a 8559 CPU- 8th Gen.) with 32 ... Flex is asking for stupid 200,- Euros for this upgrade but finally ... Mar 1, 2024 ... The Office of the United States Trade Representative (USTR) is responsible for the preparation of this report. U.S. Trade Representative ...
+2025-07-07 00:21:49,072 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 00:21:50,665 - main - INFO - Message count in history: 12
+2025-07-07 00:21:50,666 - main - INFO - Response generated: Unfortunately, even with a broader search, I am struggling to find definitive listings for Intel 14th generation CPUs under 200 euros in Croatia. The search results are quite generic and don't provide specific product prices from retailers.
+
+It's possible that:
+
+*   **Availability:** 14th generation Intel CPUs might be priced higher than 200 euros in Croatia, or not widely available yet.
+*   **Retailer Information:** The retailers I initially identified might not have up-to-date online catalogs that are easily searchable.
+*   **Search Limitations:** My search tool might not be effectively scraping the pricing data from Croatian retailer websites.
+
+Given these limitations, I cannot fulfill the request to provide a list of ten components with the required information (name, price, retailer, ID, timestamp).
+
+I recommend you to manually browse the websites of local computer parts retailers in Zagreb, such as Adarc Computer and Futura IT, or visit local stores. You can also check larger online marketplaces that operate in Croatia. This direct approach will likely yield more accurate and up-to-date pricing information.
+
+INFO:     127.0.0.1:41554 - "POST /query HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [25427]

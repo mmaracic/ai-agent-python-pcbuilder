@@ -94,13 +94,16 @@ http://localhost:8000/query (uses text body)
 * Openrouter
 * Short term memory + trimming
 * Agent graph
+* Tool use
 
 # ToDo
- * tool use
  * Long term memory
  * Streaming support
  * Structured output
  * Human in the loop
  * MCP
  * RAG
- * Agent 
+ * Multiagentic system
+
+ # Problems
+ * Can not even try to parse complex web pages (e.g. stores) on its own, specialised tools might help. 

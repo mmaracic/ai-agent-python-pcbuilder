@@ -57,13 +57,7 @@ def get_state(request: Request) -> AppState:
 @app.post("/setup")
 def setup(
     application_state: Annotated[AppState, Depends(get_state)],
-    prompt: Annotated[str, Body(..., media_type="text/plain")] =
-        """You are an assistent whose goal is to help the user find where to buy desktop computer parts.
-        First inquire the user about the user country, city, budget and component type.
-        When you have this information, use the tools to find the retailers in the provided country and city.
-         After that use search to find the best components in terms of price and performance that match user criteria
-         on the sites of collected retailers.
-         Output the list of ten components, for each list the name, price, retailer and link to the product.""",
+    prompt: Annotated[str, Body(..., media_type="text/plain")],
     prompt_size: int = 50,
     agent_type: str = "react"
 ) -> None:
@@ -79,6 +73,7 @@ def setup(
         raise ValueError(OPEN_ROUTER_API_KEY_ERROR)
 
     application_state.model = ChatOpenAI(
+        #Used models deepseek/deepseek-chat-v3-0324:free,google/gemini-2.0-flash-001
         model="deepseek/deepseek-chat-v3-0324:free",
         api_key=SecretStr(os.environ[OPEN_ROUTER_API_KEY]),
         base_url="https://openrouter.ai/api/v1",

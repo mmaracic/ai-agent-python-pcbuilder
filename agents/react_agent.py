@@ -51,7 +51,7 @@ class ReActAgent(AbstractAgent):
         self.prompt_template = prompt_template
         self.prompt_size = prompt_size
         self.compiled_graph: CompiledStateGraph = create_react_agent(
-            model, tools, checkpointer=MemorySaver())
+            model=self.model, tools=self.tools, prompt=self.prompt_template, checkpointer=MemorySaver())
 
     def process_message(self, messages: list[HumanMessage], user_id: str) -> dict[str, Any]:
         """

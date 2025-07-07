@@ -18,10 +18,10 @@ class TimeTool(BaseTool):
     A tool that returns the current time.
     """
 
-    name: str = "Date and time tool"
+    name: str = "date_and_time_tool" # Can not have spaces otherwise models other deepseek crash on query
     description: str = "A tool that returns the current date and time in ISO format."
 
-    def _run(self, *args, run_manager: Optional[CallbackManagerForToolRun] = None, **kwargs) -> str:
+    def _run(self, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
         Returns the current date and time in ISO format.
 
@@ -32,7 +32,7 @@ class TimeTool(BaseTool):
         logger.info("Time tool called and responded with: %s", current)
         return current
 
-    async def _arun(self, *args, run_manager: Optional[AsyncCallbackManagerForToolRun] = None, **kwargs) -> str:
+    async def _arun(self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         """
         Asynchronously returns the current time in ISO format.
         If the calculation is cheap, you can just delegate to the sync implementation
