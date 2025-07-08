@@ -9,6 +9,7 @@ from langchain_core.tools import BaseTool
 from tools.search_tool import SearchTool
 from tools.time_tool import TimeTool
 from tools.links_tool import LinksTool
+from tools.protis_tool import ProtisTool
 
 
 def get_tools() -> list[BaseTool]:
@@ -18,4 +19,4 @@ def get_tools() -> list[BaseTool]:
     Returns:
         list[BaseTool]: A list containing all available tools.
     """
-    return [TimeTool(), SearchTool(), LinksTool()]
+    return [TimeTool(), SearchTool(), LinksTool(), ProtisTool()]
