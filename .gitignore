@@ -1,4 +1,5 @@
 .venv
 .ipynb_checkpoints
 .Trash-0
+.coverage
 __pycache__

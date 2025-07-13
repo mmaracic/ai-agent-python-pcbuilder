@@ -70,9 +70,6 @@ code ~/.profile
 #add variable lines at the bottom of the file:  
      export ORACLE_HOME=/usr/lib/oracle/11.2/client64
 ```
-# Agents
-
-
 # Start app
 * Activate the local python environment .venv
 * In the folder where application is, run:
@@ -90,20 +87,30 @@ Available POST API is on:
 http://localhost:8000/setup
 http://localhost:8000/query (uses text body)
 
+# Testing
+To run tests run:
+```
+pytest
+```
+To get coverage with pytest-cov package installed use:
+```
+pytest-cov
+```
+
 # Features
 * Openrouter
 * Short term memory + trimming
 * Agent graph
 * Tool use
+* Structured output (item_extractor_agent.py)
+* Multiagentic system (agents are in main.py and item_extractor_agent.py)
 
 # ToDo
  * Long term memory
  * Streaming support
- * Structured output
  * Human in the loop
  * MCP
  * RAG
- * Multiagentic system
-
+ 
  # Problems
- * Can not even try to parse complex web pages (e.g. stores) on its own, specialised tools might help. 
+ 

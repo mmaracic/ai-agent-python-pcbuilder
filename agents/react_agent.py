@@ -14,6 +14,7 @@ from langchain_core.tools import BaseTool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
+from langgraph.prebuilt.chat_agent_executor import StructuredResponseSchema
 from agents.agent import AbstractAgent
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class ReActAgent(AbstractAgent):
     def __init__(self, model: BaseChatModel,
                  tools: list[BaseTool],
                  prompt_template: ChatPromptTemplate,
-                 prompt_size: int = 50):
+                 prompt_size: int = 50, response_format: StructuredResponseSchema|None = None):
         """
         Initialize a ReActAgent instance.
 
@@ -51,7 +52,7 @@ class ReActAgent(AbstractAgent):
         self.prompt_template = prompt_template
         self.prompt_size = prompt_size
         self.compiled_graph: CompiledStateGraph = create_react_agent(
-            model=self.model, tools=self.tools, prompt=self.prompt_template, checkpointer=MemorySaver())
+            model=self.model, tools=self.tools, prompt=self.prompt_template, response_format=response_format, checkpointer=MemorySaver())
 
     def process_message(self, messages: list[HumanMessage], user_id: str) -> dict[str, Any]:
         """

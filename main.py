@@ -18,7 +18,8 @@ from pydantic import SecretStr
 
 from agents.agent import AbstractAgent
 from agents import get_agent
-from tools import get_tools
+from tools.item_extractor_agent import ItemExtractorAgent
+from tools import get_provider_tools, get_tools
 
 # Constants
 OPEN_ROUTER_API_KEY = "OPEN_ROUTER_API_KEY"
@@ -92,7 +93,7 @@ def setup(
     application_state.agent = get_agent(
         agent_type=agent_type,
         model=application_state.model,
-        tools=get_tools(),
+        tools=get_tools(ItemExtractorAgent(model=application_state.model)),
         prompt_template=application_state.prompt_template,
         prompt_size=prompt_size
     )
@@ -127,3 +128,38 @@ def query(state: Annotated[AppState, Depends(get_state)],
     logger.info("Message count in history: %d", len(response["messages"]))
     logger.info("Response generated: %s", response["messages"][-1].content)
     return {"response": response["messages"][-1]}
+
+@app.post("/provider")
+def test_providers(state: Annotated[AppState, Depends(get_state)],
+          params: Annotated[dict, Body(media_type="text/json")],
+          user_id: str = "default_user"):
+    """
+    Handles POST requests to the '/provider' endpoint.
+
+    Args:
+        request (Request): The incoming HTTP request object.
+        text (str): The text provided in the request body.
+
+    Returns:
+        dict: A dictionary containing the response from the model.
+    """
+    if not state.agent or not state.model:
+        logger.error(MODEL_NOT_INITIALIZED_ERROR)
+        return {"response": MODEL_NOT_INITIALIZED_ERROR}
+    logger.info("Received paraameters: %s from user %s", params, user_id)
+
+
+    provider_agent = ItemExtractorAgent(model=state.model)
+    provider_tools = get_provider_tools(provider_agent)
+    response = None
+    for tool in provider_tools:
+        try:
+            response = tool.get_data(params)
+            logger.info("Tool %s returns : %d", tool.__class__.__name__, len(response.items))
+        except Exception as e:
+            logger.error("Error in tool %s: %s", tool.__class__.__name__, str(e))
+            response = None
+            continue
+    if response is None:
+        response = "No provider tools returned data."
+    return {"response": response}

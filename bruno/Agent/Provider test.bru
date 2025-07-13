@@ -1,0 +1,17 @@
+meta {
+  name: Provider test
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8000/provider
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "Intel cpu"
+  }
+}

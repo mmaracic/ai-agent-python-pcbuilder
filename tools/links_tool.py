@@ -1,32 +1,29 @@
 """
-Module providing a tool for retrieving unstructured computer components from provider Links.
+Module for retrieving computer components from provider Links using LangChain and Pydantic models.
 
-This module defines a Pydantic schema for search parameters and a LangChain-compatible tool class for fetching and parsing
-product listings from the Links web store. The tool supports both synchronous and asynchronous execution and returns
-unstructured text extracted from the HTML response.
+Defines a Pydantic model for search parameters and a LangChain-compatible tool class for fetching and parsing product
+listings from the Links web store. The tool supports synchronous and asynchronous execution and returns structured
+data using Pydantic models.
 """
 import logging
 from typing import Optional
 from urllib.parse import quote
 
-import requests
-from bs4 import BeautifulSoup
-from langchain_core.callbacks import (AsyncCallbackManagerForToolRun,
-                                      CallbackManagerForToolRun)
+from langchain_core.callbacks import (CallbackManagerForToolRun)
 from langchain_core.tools import BaseTool
 from langchain_core.tools.base import ArgsSchema
 from pydantic import BaseModel, Field
-
-from utils import extract_between
+from tools.provider_tool_interface import ProviderToolInterface
+from tools.item_extractor_agent import ItemExtractorAgent, ExtractedData
 
 logger = logging.getLogger(__name__)
 
 class SearchSchema(BaseModel):
     """
-    Pydantic schema for search tool input parameters.
+    Pydantic model for input parameters for Links search.
 
     Attributes:
-        query (str): The search query string to look up.
+        query (str): Search query string.
         min_price (int): Minimum price filter.
         max_price (int): Maximum price filter.
     """
@@ -36,12 +33,13 @@ class SearchSchema(BaseModel):
 
 
 
-class LinksTool(BaseTool):
-    """
-    LangChain-compatible tool for retrieving unstructured computer components from provider Links.
 
-    This tool constructs a search URL using the provided query and price range, fetches the HTML page, and parses the
-    content to extract unstructured text. It supports both synchronous and asynchronous execution.
+class LinksTool(BaseTool, ProviderToolInterface):
+    """
+    LangChain-compatible tool for retrieving computer components from provider Links.
+
+    Constructs a search URL using the provided query and price range, fetches the HTML page, and parses the
+    content to extract structured data using Pydantic models. Supports synchronous and asynchronous execution.
 
     Example request format:
         https://www.links.hr/hr/search?orderby=10&pagesize=100&viewmode=grid&q=intel%20procesor&price=0-23400
@@ -51,63 +49,45 @@ class LinksTool(BaseTool):
     description: str = "A tool that returns the unstructured computer components from provider Links."
     args_schema: Optional[ArgsSchema] = SearchSchema
 
-    def _run(self, query: str, min_price: int = 0, max_price: int = 10000, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+    def __init__(self, extractor_agent: ItemExtractorAgent):
         """
-        Retrieve unstructured computer components from provider Links.
+        Initialize LinksTool with the specified extractor agent.
 
         Args:
-            query (str): The search query string.
-            min_price (int): The minimum price filter.
-            max_price (int): The maximum price filter.
+            extractor_agent (ItemExtractorAgent): Agent used to process and extract data from the web page.
+        """
+        super().__init__(extractor_agent=extractor_agent)
+
+
+    def _run(self, query: str, min_price: int = 0, max_price: int = 10000, run_manager: Optional[CallbackManagerForToolRun] = None) -> ExtractedData:
+        """
+        Retrieve computer components from provider Links and return structured data.
+
+        Args:
+            query (str): Search query string.
+            min_price (int): Minimum price filter.
+            max_price (int): Maximum price filter.
             run_manager (Optional[CallbackManagerForToolRun]): Optional callback manager for tool run.
 
         Returns:
-            str: The unstructured computer components from provider Links as plain text.
+            ExtractedData: Structured data containing extracted items and metadata.
         """
         logger.info("Links tool called with query: %s, min_price: %d, max_price: %d", query, min_price, max_price)
-        response = requests.get(
-            f"https://www.links.hr/hr/search?orderby=10&pagesize=100&viewmode=grid&q={quote(query)}&price={min_price}-{max_price}",
-            timeout=10
-        )
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, features="html.parser")
+        url = f"https://www.links.hr/hr/search?orderby=10&pagesize=100&viewmode=grid&q={quote(query)}&price={min_price}-{max_price}"
+        return self.extractor_agent.process_link(url)
 
-            # kill all script and style elements
-            for script in soup(["script", "style"]):
-                script.extract()    # rip it out
-
-            # get text
-            text = soup.get_text()
-
-            # break into lines and remove leading and trailing space on each
-            lines = (line.strip() for line in text.splitlines())
-            # break multi-headlines into a line each
-            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            # drop blank lines
-            text = '\n'.join(chunk for chunk in chunks if chunk)
-
-            text = extract_between(text, "Grid List", "PRIJAVI SE NA LINKS NEWSLETTER")
-
-            logger.info("Links tool called and responded with: %d characters", len(text))
-            return text
-        else:
-            logger.error("Failed to fetch data from provider Links, status code: %s", response.status_code)
-            raise ValueError("Error while getting response from inks tool")
-
-    async def _arun(self, query: str, min_price: int, max_price: int, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
+    def get_data(self, params: dict) -> ExtractedData:
         """
-        Asynchronously retrieve unstructured computer components from provider Links.
-        If the calculation is cheap, you can just delegate to the sync implementation as shown below.
-        If the sync calculation is expensive, you should delete the entire _arun method.
-        LangChain will automatically provide a better implementation that will kick off the task in a thread to make sure it doesn't block other async code.
+        Extract computer component data from the given parameters.
 
         Args:
-            query (str): The search query string.
-            min_price (int): The minimum price filter.
-            max_price (int): The maximum price filter.
-            run_manager (Optional[AsyncCallbackManagerForToolRun]): Optional async callback manager for tool run.
+            params (dict): The parameters containing the search query and price filters.
 
         Returns:
-            str: The unstructured computer components from provider Links as plain text.
+            ExtractedData: Structured data extracted from the web page.
         """
-        return self._run(query, min_price, max_price, run_manager=run_manager.get_sync()) if run_manager else self._run(query, min_price, max_price)
+        return self._run(
+            query=params.get("query", ""),
+            min_price=params.get("min_price", 0),
+            max_price=params.get("max_price", 10000)
+        )
