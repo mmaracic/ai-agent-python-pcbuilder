@@ -72,12 +72,15 @@ code ~/.profile
 ```
 # Start app
 * Activate the local python environment .venv
-* In the folder where application is, run:
+* To run BE In the folder where application is, run:
 ```
 uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000 --reload --reload-dir .
 ```
 App-dir option sets the runtime folder of the app to root project folder which results in package names as expected by .py files. 
-
+* To run UI run in separate terminal:
+```
+streamlit run ui.py
+```
 # App access
 Access:  
 http://localhost:8000/docs  

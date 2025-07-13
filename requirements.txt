@@ -6,15 +6,17 @@ uvicorn
 pydantic
 requests
 
+streamlit
+
 langchain
 langchain-openai
+langchain-core
+langchain-community
+langchain-google-community
 langchain-mcp-adapters
 langmem
 langgraph
 agentevals
 
-langchain-community
-langchain-google-community
 duckduckgo-search
-
 beautifulsoup4
