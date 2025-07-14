@@ -18,8 +18,9 @@ from pydantic import SecretStr
 
 from agents.agent import AbstractAgent
 from agents import get_agent
-from tools.item_extractor_agent import ItemExtractorAgent
+from tools.item_extractor_agent import ExtractedData, ItemExtractorAgent
 from tools import get_provider_tools, get_tools
+from utils import filter_messages_until_condition
 
 # Constants
 OPEN_ROUTER_API_KEY = "OPEN_ROUTER_API_KEY"
@@ -126,8 +127,13 @@ def query(state: Annotated[AppState, Depends(get_state)],
     input_messages = [HumanMessage(text)]
     response = state.agent.process_message(input_messages, user_id)
     logger.info("Message count in history: %d", len(response["messages"]))
-    logger.info("Response generated: %s", response["messages"][-1].content)
-    return {"response": response["messages"][-1]}
+    reversed_list = response["messages"][::-1]
+    new_messages = filter_messages_until_condition(
+        reversed_list,
+        lambda m: m.type == "human"
+    )[::-1]
+    logger.info("Response generated: %s", [m.content for m in new_messages])
+    return {"response": new_messages}
 
 @app.post("/provider")
 def test_providers(state: Annotated[AppState, Depends(get_state)],
@@ -151,15 +157,16 @@ def test_providers(state: Annotated[AppState, Depends(get_state)],
 
     provider_agent = ItemExtractorAgent(model=state.model)
     provider_tools = get_provider_tools(provider_agent)
-    response = None
+    response: list[ExtractedData] = []
     for tool in provider_tools:
         try:
-            response = tool.get_data(params)
-            logger.info("Tool %s returns : %d", tool.__class__.__name__, len(response.items))
+            tool_response = tool.get_data(params)
+            logger.info("Tool %s returns : %d", tool.__class__.__name__, len(tool_response.items))
+            response.append(tool_response)
         except Exception as e:
             logger.error("Error in tool %s: %s", tool.__class__.__name__, str(e))
-            response = None
             continue
-    if response is None:
-        response = "No provider tools returned data."
-    return {"response": response}
+    if not response:
+        return {"response": "No provider tools returned data."}
+    else:
+        return {"response": response}

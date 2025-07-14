@@ -40,7 +40,7 @@ class ExtractedData(BaseModel):
     """
     date_time: str = Field(description="Date and time of extraction")
     store_name: str = Field(description="Name of the store")
-    items: list[ExtractedItem] = Field(description="List of extracted items")
+    items: list[ExtractedItem] = Field(description="List of extracted items", default_factory=list)
 
 
 class ItemExtractorAgent(ReActAgent):
@@ -66,7 +66,7 @@ class ItemExtractorAgent(ReActAgent):
                     I will give you a link of a web page of computer components store.
                     Access the link to obtain the web page data.
                     The data consists of store menu, service information and search results.
-                    Extract the store name and search result items.
+                    Extract the store name and search result items in a structured way, no other information is needed.
                     """
                 ),
                 MessagesPlaceholder(variable_name="messages"),
@@ -87,5 +87,4 @@ class ItemExtractorAgent(ReActAgent):
         """
         messages = [HumanMessage(content=f"Extract items from the following store page: {link}")]
         result_dict: dict[str, Any] = self.process_message(messages, user_id="default_user")
-        return ExtractedData(**result_dict)
-    
+        return result_dict['structured_response']

@@ -39,24 +39,55 @@ import streamlit as st
 API_URL = "http://localhost:8000"
 TIMEOUT = httpx.Timeout(600, connect=5, pool=5)
 
+# CSS styles for message types
+MESSAGE_STYLES = {
+    "user": """
+        background-color: #1E88E5;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    """,
+    "assistant": """
+        background-color: #D32F2F;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    """,
+    "tool": """
+        background-color: #2E7D32;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    """
+}
+
 
 class ChatMessage(BaseModel):
     """Message model for chat interactions."""
-    role: Literal["user", "assistant"]
+    role: Literal["user", "assistant", "tool"]
     content: str
+    name: Optional[str] = None  # For tool messages, can include tool name
 
 
-DEFAULT_SETUP_PROMPT = """You are an assistent whose goal is to help the user find where to buy desktop computer parts. You are to find these parts using a sequence of steps as below:
-1. Inquire the user about the user country, city, budget and component type.
-2. Use the search tools to find the retailers in the provided country and city.
-3. Search retailer web site to find the best components in terms of price and performance that match user criteria.
-4.Output the list of ten best components, for each component list the name, price, retailer name, retailer product id and timestamp when the informaion was obtained.
+DEFAULT_SETUP_PROMPT = """
+You are an assistent whose goal is to help the user find at which local retailer to buy desktop computer parts.
+The user has to specify city and country where to search for retailers.
+Think about the steps how to fulfill the user request.
+The final result of the plan has to be the list of ten best components across all available retailers that fit user request.
+For each component list the name, price, retailer name, retailer product id and timestamp when the informaion was obtained.
 The returned data about components can not be older than 7 days before the current date.
+If search parameters are expanded all the retailers have to be searched again.
 """
 
 def setup_api(prompt: str | None) -> bool:
     """
-    Setup the model via API endpoint with a system prompt.
+    Setup the model via API endpoint with a system prompt and clear session state.
     
     Args:
         prompt (str | None): System prompt for the model setup
@@ -66,6 +97,11 @@ def setup_api(prompt: str | None) -> bool:
     """
     if prompt is None:
         prompt = DEFAULT_SETUP_PROMPT
+
+    # Clear session state
+    st.session_state.messages = []
+    st.session_state.api_ready = False
+        
     try:
         with httpx.Client() as client:
             response = client.post(
@@ -78,15 +114,15 @@ def setup_api(prompt: str | None) -> bool:
     except httpx.RequestError:
         return False
 
-def query_api(prompt: str) -> Optional[str]:
+def query_api(prompt: str) -> list[ChatMessage]:
     """
-    Send a query to the API and get response.
+    Send a query to the API and get response messages.
     
     Args:
         prompt (str): User's query text
         
     Returns:
-        Optional[str]: Response from the API or None if request failed
+        list[ChatMessage]: List of response messages or empty list if request failed
     """
     try:
         with httpx.Client() as client:
@@ -100,12 +136,23 @@ def query_api(prompt: str) -> Optional[str]:
             if response.status_code == 200:
                 try:
                     response_data = response.json()
-                    return response_data.get("response", {}).get("content")
+                    messages = response_data.get("response", [])
+                    chat_messages = []
+                    
+                    for msg in messages:
+                        # Map message types to roles
+                        role = "assistant" if msg.get("type") == "ai" else "tool"
+                        content = msg.get("content", "")
+                        name = msg.get("name", None)  # For tool messages, can include tool name
+                        if content:  # Only add messages with content
+                            chat_messages.append(ChatMessage(role=role, content=content, name=name))
+
+                    return chat_messages
                 except (KeyError, ValueError):
-                    return None
-            return None
+                    return []
+            return []
     except httpx.RequestError:
-        return None
+        return []
 
 def init_session_state() -> None:
     """Initialize session state variables."""
@@ -148,8 +195,9 @@ def main():
 
     # Display chat history
     for message in st.session_state.messages:
+        style = MESSAGE_STYLES.get(message.role, "")
         with st.chat_message(message.role):
-            st.markdown(message.content)
+            st.markdown(f'<div style="{style}">{message.content}</div>', unsafe_allow_html=True)
 
     # Chat input
     if prompt := st.chat_input("What kind of PC are you looking to build?"):
@@ -157,17 +205,23 @@ def main():
         user_message = ChatMessage(role="user", content=prompt)
         st.session_state.messages.append(user_message)
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(f'<div style="{MESSAGE_STYLES["user"]}">{prompt}</div>', unsafe_allow_html=True)
 
         # Get agent response through API
-        with st.chat_message("assistant"):
-            with st.spinner("🤔 Thinking..."):
-                if response := query_api(prompt):
-                    st.markdown(response)
-                    assistant_message = ChatMessage(role="assistant", content=response)
-                    st.session_state.messages.append(assistant_message)
-                else:
-                    st.error("❌ Failed to get response from API. Please try again.")
+        with st.spinner("🤔 Thinking..."):
+            messages = query_api(prompt)
+            if messages:
+                for message in messages:
+                    style = MESSAGE_STYLES.get(message.role, "")
+                    with st.chat_message(message.role):
+                        if message.role == "tool":
+                            st.markdown(f'<div style="{style}"><strong>Tool: {message.name}</strong> {message.content}</div>', unsafe_allow_html=True)
+                        else:
+                            # For user and assistant messages, just display the content
+                            st.markdown(f'<div style="{style}">{message.content}</div>', unsafe_allow_html=True)
+                    st.session_state.messages.append(message)
+            else:
+                st.error("❌ Failed to get response from API. Please try again.")
 
 
 if __name__ == "__main__":
