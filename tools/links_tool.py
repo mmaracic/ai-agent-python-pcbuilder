@@ -42,7 +42,7 @@ class LinksTool(BaseTool, ProviderToolInterface):
     content to extract structured data using Pydantic models. Supports synchronous and asynchronous execution.
 
     Example request format:
-        https://www.links.hr/hr/search?orderby=10&pagesize=100&viewmode=grid&q=intel%20procesor&price=0-23400
+        https://www.links.hr/hr/search?orderby=0&pagesize=100&viewmode=grid&q=intel%20procesor&price=0-23400
     """
 
     name: str = "links_tool"
@@ -73,7 +73,7 @@ class LinksTool(BaseTool, ProviderToolInterface):
             ExtractedData: Structured data containing extracted items and metadata.
         """
         logger.info("Links tool called with query: %s, min_price: %d, max_price: %d", query, min_price, max_price)
-        url = f"https://www.links.hr/hr/search?orderby=10&pagesize=100&viewmode=grid&q={quote(query)}&price={min_price}-{max_price}"
+        url = f"https://www.links.hr/hr/search?orderby=0&pagesize=100&viewmode=grid&q={quote(query)}&price={min_price}-{max_price}"
         return self.extractor_agent.process_link(url)
 
     def get_data(self, params: dict) -> ExtractedData:

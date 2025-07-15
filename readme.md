@@ -114,6 +114,7 @@ pytest-cov
  * Human in the loop
  * MCP
  * RAG
+ * Evaluations
  
  # Problems
  

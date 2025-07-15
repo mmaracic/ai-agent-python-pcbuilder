@@ -12,6 +12,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field
 from agents.react_agent import ReActAgent
+from tools.time_tool import TimeTool
 from tools.web_scraper_tool import WebScraperTool
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ class ItemExtractorAgent(ReActAgent):
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
-        super().__init__(model, [WebScraperTool()], prompt_template, prompt_size, response_format=ExtractedData)
+        super().__init__(model, [WebScraperTool(), TimeTool()], prompt_template, prompt_size, response_format=ExtractedData)
         
         
     def process_link(self, link: str,) -> ExtractedData:
