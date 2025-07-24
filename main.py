@@ -8,6 +8,7 @@ import logging
 import os
 from typing import Annotated, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.params import Body, Depends
 from langchain.chat_models.base import BaseChatModel
@@ -18,6 +19,7 @@ from pydantic import SecretStr
 
 from agents.agent import AbstractAgent
 from agents import get_agent
+from database.azure_repository import AzureRepository
 from tools.item_extractor_agent import ExtractedData, ItemExtractorAgent
 from tools import get_provider_tools, get_tools
 from utils import filter_messages_until_condition
@@ -37,8 +39,9 @@ class AppState:
         self.model: Optional[BaseChatModel] = None
         self.agent: Optional[AbstractAgent] = None
         self.prompt_template: Optional[ChatPromptTemplate] = None
+        self.long_term_memory: Optional[AzureRepository] = None
 
-
+load_dotenv()
 app = FastAPI()
 app.state.app_state = AppState()
 logging.basicConfig(level=logging.INFO,
@@ -91,10 +94,18 @@ def setup(
             MessagesPlaceholder(variable_name="messages"),
         ]
     )
+    application_state.long_term_memory = AzureRepository(
+        connection_string=os.environ.get("AZURE_COSMOS_CONNECTION_STRING", ""),
+        database_name=os.environ.get("AZURE_COSMOS_DATABASE_NAME", "pcbuilder"),
+        container_name=os.environ.get("AZURE_COSMOS_CONTAINER_NAME", "extracted_items")
+    )
     application_state.agent = get_agent(
         agent_type=agent_type,
         model=application_state.model,
-        tools=get_tools(ItemExtractorAgent(model=application_state.model)),
+        tools=get_tools(
+            ItemExtractorAgent(model=application_state.model,
+                long_term_memory=application_state.long_term_memory)
+        ),
         prompt_template=application_state.prompt_template,
         prompt_size=prompt_size
     )
@@ -154,8 +165,13 @@ def test_providers(state: Annotated[AppState, Depends(get_state)],
         return {"response": MODEL_NOT_INITIALIZED_ERROR}
     logger.info("Received paraameters: %s from user %s", params, user_id)
 
-
-    provider_agent = ItemExtractorAgent(model=state.model)
+    long_term_memory = AzureRepository(
+        connection_string=os.environ.get("AZURE_COSMOS_CONNECTION_STRING", ""),
+        database_name=os.environ.get("AZURE_COSMOS_DATABASE_NAME", "pcbuilder"),
+        container_name=os.environ.get("AZURE_COSMOS_CONTAINER_NAME", "extracted_items")
+    )
+    provider_agent = ItemExtractorAgent(model=state.model,
+                        long_term_memory=long_term_memory)
     provider_tools = get_provider_tools(provider_agent)
     response: list[ExtractedData] = []
     for tool in provider_tools:

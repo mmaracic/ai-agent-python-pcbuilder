@@ -12,10 +12,13 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field
 from agents.react_agent import ReActAgent
+from database.azure_repository import AzureRepository
+from database.extracted_item_model import DatabaseExtractedItem
 from tools.time_tool import TimeTool
 from tools.web_scraper_tool import WebScraperTool
 
 logger = logging.getLogger(__name__)
+
 
 class ExtractedItem(BaseModel):
     """
@@ -28,7 +31,9 @@ class ExtractedItem(BaseModel):
     """
     price: str = Field(description="Price of the item")
     description: str = Field(description="Description of the item")
-    item_code: str = Field(description="Unique identifier for the item in the store")
+    item_code: str = Field(
+        description="Unique identifier for the item in the store")
+
 
 class ExtractedData(BaseModel):
     """
@@ -41,7 +46,8 @@ class ExtractedData(BaseModel):
     """
     date_time: str = Field(description="Date and time of extraction")
     store_name: str = Field(description="Name of the store")
-    items: list[ExtractedItem] = Field(description="List of extracted items", default_factory=list)
+    items: list[ExtractedItem] = Field(
+        description="List of extracted items", default_factory=list)
 
 
 class ItemExtractorAgent(ReActAgent):
@@ -56,10 +62,13 @@ class ItemExtractorAgent(ReActAgent):
         model (BaseChatModel): The chat model for generating responses.
         prompt_size (int, optional): Maximum number of messages to include in the prompt. Defaults to 50.
     """
+    long_term_memory: AzureRepository
 
     def __init__(self,
                  model: BaseChatModel,
+                 long_term_memory: AzureRepository,
                  prompt_size: int = 50):
+        self.long_term_memory = long_term_memory
         prompt_template: ChatPromptTemplate = ChatPromptTemplate.from_messages(
             [
                 SystemMessage(
@@ -73,9 +82,9 @@ class ItemExtractorAgent(ReActAgent):
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
-        super().__init__(model, [WebScraperTool(), TimeTool()], prompt_template, prompt_size, response_format=ExtractedData)
-        
-        
+        super().__init__(model, [WebScraperTool(), TimeTool(
+        )], prompt_template, prompt_size, response_format=ExtractedData)
+
     def process_link(self, link: str,) -> ExtractedData:
         """
         Process a message to extract items from the provided store page link.
@@ -88,4 +97,15 @@ class ItemExtractorAgent(ReActAgent):
         """
         messages = [HumanMessage(content=f"Extract items from the following store page: {link}")]
         result_dict: dict[str, Any] = self.process_message(messages, user_id="default_user")
-        return result_dict['structured_response']
+        extracted_data: ExtractedData = ExtractedData(**result_dict['structured_response'])
+        for item in extracted_data.items:
+            # Map ExtractedItem to the database item model
+            db_item: DatabaseExtractedItem = DatabaseExtractedItem(
+                price=item.price,
+                description=item.description,
+                item_code=item.item_code,
+                store_name=extracted_data.store_name,
+                date_time=extracted_data.date_time
+            )
+            self.long_term_memory.create_item(db_item.to_dict())
+        return extracted_data

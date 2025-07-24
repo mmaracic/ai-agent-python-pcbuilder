@@ -5,6 +5,7 @@ fastapi
 uvicorn
 pydantic
 requests
+python-dotenv
 
 streamlit
 
@@ -20,3 +21,6 @@ agentevals
 
 duckduckgo-search
 beautifulsoup4
+
+azure-cosmos
+azure-identity
