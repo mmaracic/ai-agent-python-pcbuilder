@@ -33,8 +33,21 @@ class SearchTool(BaseTool):
     description: str = "Performs a web search using DuckDuckGo."
     args_schema: Optional[ArgsSchema] = SearchSchema
 
-    duckduck: DuckDuckGoSearchAPIWrapper = DuckDuckGoSearchAPIWrapper()
-    google: GoogleSearchAPIWrapper = GoogleSearchAPIWrapper()
+    duckduck: DuckDuckGoSearchAPIWrapper
+    google: GoogleSearchAPIWrapper
+
+    def __init__(self, duckduck: Optional[DuckDuckGoSearchAPIWrapper] = None, google: Optional[GoogleSearchAPIWrapper] = None):
+        """
+        Initialize the SearchTool with optional DuckDuckGo and Google search wrappers.
+
+        Args:
+            duckduck (Optional[DuckDuckGoSearchAPIWrapper]): DuckDuckGo search wrapper.
+            google (Optional[GoogleSearchAPIWrapper]): Google search wrapper.
+        """
+        super().__init__(
+            duckduck=duckduck if duckduck is not None else DuckDuckGoSearchAPIWrapper(),
+            google=google if google is not None else GoogleSearchAPIWrapper()
+        )
 
     def _run(self, query: str) -> str:
         """

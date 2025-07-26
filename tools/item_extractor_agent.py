@@ -97,15 +97,21 @@ class ItemExtractorAgent(ReActAgent):
         """
         messages = [HumanMessage(content=f"Extract items from the following store page: {link}")]
         result_dict: dict[str, Any] = self.process_message(messages, user_id="default_user")
-        extracted_data: ExtractedData = ExtractedData(**result_dict['structured_response'])
-        for item in extracted_data.items:
-            # Map ExtractedItem to the database item model
-            db_item: DatabaseExtractedItem = DatabaseExtractedItem(
-                price=item.price,
-                description=item.description,
-                item_code=item.item_code,
-                store_name=extracted_data.store_name,
-                date_time=extracted_data.date_time
-            )
-            self.long_term_memory.create_item(db_item.to_dict())
+        extracted_data: ExtractedData = result_dict['structured_response']
+        if extracted_data is not None:
+            logger.info("Extracted item count: %d", len(extracted_data.items))
+            # Store each extracted item in the Azure Cosmos DB
+            for item in extracted_data.items:
+                # Map ExtractedItem to the database item model
+                db_item: DatabaseExtractedItem = DatabaseExtractedItem(
+                    price=item.price,
+                    description=item.description,
+                    item_code=item.item_code,
+                    store_name=extracted_data.store_name,
+                    date_time=extracted_data.date_time
+                )
+                self.long_term_memory.create_item(db_item.to_dict())
+        else:
+            logger.warning("No items were extracted from the provided link: %s", link)
+        logger.info("Extraction completed for link: %s", link)
         return extracted_data
