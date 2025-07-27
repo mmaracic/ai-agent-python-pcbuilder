@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from agents.react_agent import ReActAgent
 from database.azure_repository import AzureRepository
 from database.extracted_item_model import DatabaseExtractedItem
+from embedding.embedder import Embedder
 from tools.time_tool import TimeTool
 from tools.web_scraper_tool import WebScraperTool
 
@@ -63,12 +64,15 @@ class ItemExtractorAgent(ReActAgent):
         prompt_size (int, optional): Maximum number of messages to include in the prompt. Defaults to 50.
     """
     long_term_memory: AzureRepository
+    embedder: Embedder
 
     def __init__(self,
                  model: BaseChatModel,
                  long_term_memory: AzureRepository,
+                 embedder: Embedder,
                  prompt_size: int = 50):
         self.long_term_memory = long_term_memory
+        self.embedder = embedder
         prompt_template: ChatPromptTemplate = ChatPromptTemplate.from_messages(
             [
                 SystemMessage(
@@ -102,13 +106,15 @@ class ItemExtractorAgent(ReActAgent):
             logger.info("Extracted item count: %d", len(extracted_data.items))
             # Store each extracted item in the Azure Cosmos DB
             for item in extracted_data.items:
+                embedding = self.embedder.embed(item.description)
                 # Map ExtractedItem to the database item model
                 db_item: DatabaseExtractedItem = DatabaseExtractedItem(
                     price=item.price,
                     description=item.description,
                     item_code=item.item_code,
                     store_name=extracted_data.store_name,
-                    date_time=extracted_data.date_time
+                    date_time=extracted_data.date_time,
+                    embedding=embedding
                 )
                 self.long_term_memory.create_item(db_item.to_dict())
         else:

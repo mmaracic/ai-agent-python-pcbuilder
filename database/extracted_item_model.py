@@ -24,6 +24,10 @@ class DatabaseExtractedItem(BaseModel):
     )
     price: str = Field(description="Price of the item")
     description: str = Field(description="Description of the item")
+    embedding: list[float] = Field(
+        description="Embedding vector for the item description",
+        default_factory=list
+    )
     item_code: str = Field(description="Unique identifier for the item in the store")
     store_name: str = Field(description="Name of the store")
     date_time: str = Field(description="Date and time of extraction")

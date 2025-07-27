@@ -20,6 +20,7 @@ from pydantic import SecretStr
 from agents.agent import AbstractAgent
 from agents import get_agent
 from database.azure_repository import AzureRepository
+from embedding.azure_llm_embedder import AzureLlmEmbedder
 from tools.item_extractor_agent import ExtractedData, ItemExtractorAgent
 from tools import get_provider_tools, get_tools
 from utils import filter_messages_until_condition
@@ -103,8 +104,17 @@ def setup(
         agent_type=agent_type,
         model=application_state.model,
         tools=get_tools(
-            ItemExtractorAgent(model=application_state.model,
-                long_term_memory=application_state.long_term_memory)
+            ItemExtractorAgent(
+                model=application_state.model,
+                long_term_memory=application_state.long_term_memory,
+                embedder=AzureLlmEmbedder(
+                    endpoint=os.environ.get("AZURE_EMBEDDER_ENDPOINT", ""),
+                    api_key=os.environ.get("AZURE_EMBEDDER_API_KEY", ""),
+                    api_version=os.environ.get("AZURE_EMBEDDER_API_VERSION", ""),
+                    deployment=os.environ.get("AZURE_EMBEDDER_DEPLOYMENT", ""),
+                    model=os.environ.get("AZURE_EMBEDDER_MODEL", "text-embedding-3-large")
+                )
+            )
         ),
         prompt_template=application_state.prompt_template,
         prompt_size=prompt_size
@@ -170,8 +180,17 @@ def test_providers(state: Annotated[AppState, Depends(get_state)],
         database_name=os.environ.get("AZURE_COSMOS_DATABASE_NAME", "pcbuilder"),
         container_name=os.environ.get("AZURE_COSMOS_CONTAINER_NAME", "extracted_items")
     )
-    provider_agent = ItemExtractorAgent(model=state.model,
-                        long_term_memory=long_term_memory)
+    provider_agent = ItemExtractorAgent(
+        model=state.model,
+        long_term_memory=long_term_memory,
+        embedder=AzureLlmEmbedder(
+            endpoint=os.environ.get("AZURE_EMBEDDER_ENDPOINT", ""),
+            api_key=os.environ.get("AZURE_EMBEDDER_API_KEY", ""),
+            api_version=os.environ.get("AZURE_EMBEDDER_API_VERSION", ""),
+            deployment=os.environ.get("AZURE_EMBEDDER_DEPLOYMENT", ""),
+            model=os.environ.get("AZURE_EMBEDDER_MODEL", "text-embedding-3-large")
+        )
+    )
     provider_tools = get_provider_tools(provider_agent)
     response: list[ExtractedData] = []
     for tool in provider_tools:
