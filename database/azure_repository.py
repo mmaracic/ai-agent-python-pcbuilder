@@ -38,9 +38,7 @@ class AzureRepository:
         Returns:
             dict: The created item.
         """
-        logger.info(f"Creating item: {item}")
         created = self.container.create_item(item)
-        logger.info(f"Item created: {created}")
         return created
 
     def read_item(self, item_id: str) -> dict:
@@ -53,9 +51,7 @@ class AzureRepository:
         Returns:
             dict: The retrieved item.
         """
-        logger.info(f"Reading item with id: {item_id}")
         item = self.container.read_item(item=item_id, partition_key=item_id)
-        logger.info(f"Item read: {item}")
         return item
 
     def update_item(self, updated_item: dict) -> dict:
@@ -67,9 +63,7 @@ class AzureRepository:
         Returns:
             dict: The upserted item.
         """
-        logger.info(f"Updating item: {updated_item}")
         upserted = self.container.upsert_item(updated_item)
-        logger.info(f"Item upserted: {upserted}")
         return upserted
 
     def delete_item(self, item_id: str) -> dict | None:
@@ -82,7 +76,53 @@ class AzureRepository:
         Returns:
             dict: The result of the delete operation.
         """
-        logger.info(f"Deleting item with id: {item_id}")
         result = self.container.delete_item(item=item_id, partition_key=item_id)
-        logger.info(f"Delete result: {result}")
         return result
+
+    def query_by_embedding(self, embedding: list[float], max_results: int = 10) -> list[dict]:
+        """
+        Query items in the Cosmos DB container by vector similarity using the VectorDistance function.
+        
+        This method performs a semantic similarity search against the vector embeddings stored in Cosmos DB.
+        It calculates the distance between the provided embedding vector and the embeddings in the database,
+        returning the closest matches sorted by similarity.
+
+        Args:
+            embedding (list[float]): The embedding vector to query by. Should be a list of floating point 
+                                     numbers representing the vector embedding of the query text.
+            max_results (int, optional): Maximum number of results to return. Defaults to 10.
+
+        Returns:
+            list[dict]: A list of items matching the embedding query, with only specific fields:
+                        - id: The item's unique identifier
+                        - price: The price of the item
+                        - description: The item description
+                        - item_code: The product code from the retailer
+                        - store_name: The name of the retailer
+                        - date_time: When the item was retrieved
+                        - similarity_score: The vector distance value (lower is better)
+                        
+        Note:
+            This function leverages Cosmos DB's vector capabilities to perform similarity search.
+            The results are ordered by increasing vector distance (meaning the most similar 
+            items appear first).
+        """
+        # Only select the fields defined in RetrievedDatabaseExtractedItem
+        select_fields = [
+            "c.id",
+            "c.price",
+            "c.description",
+            "c.item_code",
+            "c.store_name",
+            "c.date_time",
+            "VectorDistance(c.embedding, @embedding) AS similarity_score"
+        ]
+        select_clause = ", ".join(select_fields)
+        query = f"""
+        SELECT TOP {max_results} {select_clause}
+        FROM c
+        ORDER BY VectorDistance(c.embedding, @embedding)
+        """
+        parameters = [{"name": "@embedding", "value": embedding}]
+        items = self.container.query_items(query=query, parameters=parameters, enable_cross_partition_query=True)
+        return list(items)
