@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "update-requirements",
+      "type": "shell",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "command": "bash",
+      "args": [
+        "-lc",
+        "source .venv/bin/activate && python -m pip install -r requirements.txt"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "start-app",
+      "type": "shell",
+      "dependsOn": ["update-requirements"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "command": "bash",
+      "args": [
+        "-lc",
+        "source .venv/bin/activate && python -m dotenv run -- uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000 --reload --reload-dir ."
+      ],
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "start-ui",
+      "type": "shell",
+      "dependsOn": ["update-requirements"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "command": "bash",
+      "args": [
+        "-lc",
+        "source .venv/bin/activate && python -m dotenv run -- streamlit run ui.py"
+      ],
+      "isBackground": false,
+      "problemMatcher": []
+    }
+  ]
+}

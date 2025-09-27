@@ -64,23 +64,59 @@ To deactivate the current virtual environment use:
 deactivate
 ```
 # Set environment variables
-ORACLE_HOME is a variable sample
+Project configuration is provided via a `.env` file in the repository root (a distributable template is `.env.sample`).
+
+Steps:
+1. Copy the sample file:
 ```
-code ~/.profile
-#add variable lines at the bottom of the file:  
-     export ORACLE_HOME=/usr/lib/oracle/11.2/client64
+cp .env.sample .env
 ```
+2. Edit `.env` and add your real keys (never commit secrets).
+3. Always run the app (or any command needing the variables) through the virtual environment and `python -m dotenv run -- <command>` so the variables are loaded automatically.
+
+Example (same as the VS Code task `start-app`):
+```bash
+source .venv/bin/activate
+python -m dotenv run -- uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000 --reload --reload-dir .
+```
+
+UI (same pattern as `start-ui` task):
+```bash
+source .venv/bin/activate
+python -m dotenv run -- streamlit run ui.py
+```
+
+Quick test that an env var is visible (example using GOOGLE_API_KEY):
+```bash
+python -m dotenv run -- python -c "import os; print(os.getenv('GOOGLE_API_KEY'))"
+```
+
+This avoids manual exporting and keeps secrets scoped only to the invoked process.
 # Start app
-* Activate the local python environment .venv
-* To run BE In the folder where application is, run:
+Option A: VS Code tasks (preferred)
+* Backend API: Task `start-app`
+* UI: Task `start-ui`
+
+Option B: Run manually in a terminal (full commands)
+
+Backend (FastAPI + Uvicorn):
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt  # if not already installed
+python -m dotenv run -- uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000 --reload --reload-dir .
 ```
-uvicorn main:app --app-dir . --host 127.0.0.1 --port 8000 --reload --reload-dir .
+
+UI (Streamlit):
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt  # if not already installed
+python -m dotenv run -- streamlit run ui.py
 ```
-App-dir option sets the runtime folder of the app to root project folder which results in package names as expected by .py files. 
-* To run UI run in separate terminal:
-```
-streamlit run ui.py
-```
+
+Notes:
+* `python -m dotenv run -- <cmd>` injects variables from `.env` only for that command.
+* `--app-dir .` pins the project root so imports resolve as expected.
+* `--reload` / `--reload-dir .` enable hot-reload during development.
 # App access
 Access:  
 http://localhost:8000/docs  

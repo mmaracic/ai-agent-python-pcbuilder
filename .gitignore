@@ -3,4 +3,5 @@
 .Trash-0
 .coverage
 .env*
+!.env.sample
 __pycache__
