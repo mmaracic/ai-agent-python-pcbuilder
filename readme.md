@@ -129,7 +129,7 @@ http://localhost:8000/query (uses text body)
 # Testing
 To run tests run:
 ```
-pytest
+pytest (-q flag for short summary output)
 ```
 To get coverage with pytest-cov package installed use:
 ```

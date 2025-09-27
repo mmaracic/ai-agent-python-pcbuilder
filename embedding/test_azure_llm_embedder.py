@@ -107,7 +107,9 @@ def test_embed_returns_empty_on_no_data(mock_azure_openai_for_empty, env_vars):
 # For the real test, we use a fixture to create the real embedder
 @pytest.fixture
 def real_embedder(env_vars):
-    """Fixture to create a real AzureLlmEmbedder"""
+    """Fixture to create a real AzureLlmEmbedder or skip if credentials missing."""
+    if not all([env_vars["endpoint"], env_vars["api_version"], env_vars["deployment"], env_vars["model"], env_vars["api_key"]]):
+        pytest.skip("Azure embedding credentials not available in environment (fixture)")
     return AzureLlmEmbedder(
         endpoint=env_vars["endpoint"],
         api_version=env_vars["api_version"],

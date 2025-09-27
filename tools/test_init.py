@@ -19,7 +19,7 @@ def test_get_provider_tools_returns_provider_tools():
     """
     Test that get_provider_tools returns all provider tool instances, including DummyProviderTool.
     """
-    agent = ItemExtractorAgent(model=MagicMock())
+    agent = ItemExtractorAgent(model=MagicMock(), long_term_memory=MagicMock(), embedder=MagicMock())
     tools_list = get_provider_tools(agent)
     assert any(isinstance(tool, LinksTool) for tool in tools_list)
     assert any(isinstance(tool, ProtisTool) for tool in tools_list)

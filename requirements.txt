@@ -22,5 +22,7 @@ agentevals
 duckduckgo-search
 beautifulsoup4
 
+xmldiff
+
 azure-cosmos
 azure-identity
